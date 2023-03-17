@@ -1,0 +1,59 @@
+{
+  "name": "i18nhelper",
+  "displayName": "i18nhelper",
+  "description": "自动替换中文为i18n键值",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "configuration": {
+    "i18npath": []
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "i18nhelper.configure",
+        "title": "i18nhelper:配置"
+      },
+      {
+        "command": "i18nhelper.replace",
+        "title": "i18nhelper:替换"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "i18nhelper.replace",
+          "when": "editorTextFocus",
+          "group": "i18nhelper"
+        },
+        {
+          "command": "i18nhelper.configure",
+          "group": "i18nhelper"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.76.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5",
+    "@vscode/test-electron": "^2.2.3"
+  },
+  "README.md": "README.md"
+}
