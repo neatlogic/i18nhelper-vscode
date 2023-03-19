@@ -47,7 +47,6 @@ function activate(context) {
         vscode.window.showErrorMessage('editor not found.');
         return;
       }
-
       const selection = editor.selection;
       const selectedText = editor.document.getText(selection);
       if (selectedText) {
@@ -80,7 +79,6 @@ function activate(context) {
                       );
                       foundedkey = input;
                     } catch (e) {
-                      console.log(e);
                       vscode.window.showErrorMessage(e);
                     }
                   }
@@ -89,7 +87,17 @@ function activate(context) {
           }
           if (foundedkey) {
             editor.edit((editBuilder) => {
-              editBuilder.replace(selection, foundedkey);
+              if (getFormat()) {
+                let newword = getFormat().replace('?', foundedkey);
+                if (detectSelectedTextType() === 'script') {
+                  if (!newword.startsWith('this.')) {
+                    newword = 'this.' + newword;
+                  }
+                }
+                editBuilder.replace(selection, newword);
+              } else {
+                editBuilder.replace(selection, foundedkey);
+              }
             });
           }
         }
@@ -103,6 +111,36 @@ function activate(context) {
 
 // This method is called when your extension is deactivated
 function deactivate() {}
+
+function detectSelectedTextType() {
+  let editor = vscode.window.activeTextEditor;
+  const selection = editor.selection;
+  const textBeforeSelected = editor.document.getText(
+    new vscode.Range(0, 0, selection.start.line, selection.start.character)
+  );
+  const templateIndex = textBeforeSelected.lastIndexOf('<template>');
+  const scriptIndex = textBeforeSelected.lastIndexOf('<script>');
+  if (templateIndex > scriptIndex) {
+    return 'template';
+  } else if (scriptIndex > -1) {
+    return 'script';
+  }
+  return '';
+}
+
+function getFormat() {
+  const settingFileName = 'i18nhelper-setting.json';
+  const folders = vscode.workspace.workspaceFolders;
+  const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
+  const filePath = path.join(workspacePath, '.vscode', settingFileName);
+  if (isFileExists(filePath)) {
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    try {
+      const confObj = JSON.parse(fileContent);
+      return confObj['format'] || '';
+    } catch (e) {}
+  }
+}
 
 function updateI18nConfig(data, type, key, value) {
   const keys = key.split('.');
