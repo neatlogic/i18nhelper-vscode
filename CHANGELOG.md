@@ -1,9 +1,9 @@
 # Change Log
 
-All notable changes to the "i18nhelper" extension will be documented in this file.
+## [0.0.1] - 2023-03-18
+- 初始发布
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+## [0.0.2] - 2023-03-19
+### 新增
+- 增加format配置，激活格式话功能，key将会替换掉?，例如:$t('?')，替换完成后变成$t('key')。
+- 自动识别替换位置是在template中还是script中，如果在script中，并且配置了format，会根据需要自动补充this.前缀。

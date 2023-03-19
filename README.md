@@ -49,13 +49,3 @@ button/zh.json
 path是从workspace开始的相对路径，type是页面引用时的分类前缀。
 
 2. 选中一段文本，打开鼠标右键，点击i18nhelper:替换，插件会自动根据选中文本替换成配置文件中对应的key，如果key不存在，可以通过输入框输入新的key，插件会自动把key和文本写入对应分类的配置文件中。
-
-
-## Release Notes
-### 0.0.1
-初次发布
-
-### 0.0.2
-1. 增加format配置，激活格式话功能，key将会替换掉?，例如:$t('?')，替换完成后变成$t('key')。
-2. 自动识别替换位置是在template中还是script中，如果在script中，并且配置了format，会自动补充this.前缀。
-
