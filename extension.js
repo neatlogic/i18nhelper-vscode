@@ -160,7 +160,7 @@ function getConfig() {
       return JSON.parse(fileContent);
     } catch (e) {}
   }
-  return;
+  return {};
 }
 
 function getFormat() {
