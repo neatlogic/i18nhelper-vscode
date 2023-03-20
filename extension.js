@@ -1,8 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const segment = require('@node-rs/jieba'); // 导入中文分词库
-
+//const segment = require('@node-rs/jieba'); // 导入中文分词库
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -75,8 +74,8 @@ function activate(context) {
             similarList
           );
           if (!foundedkey) {
-            let content = '';
             if (similarList.length > 0) {
+              let content = '';
               similarList.forEach((c) => {
                 if (content) {
                   content += ',';
@@ -278,20 +277,20 @@ function findKey(forecast, cnword, data, path, similarList) {
       }
     }
   } else if (typeof data === 'string') {
-    if (cnword.toLowerCase() === data.toLowerCase()) {
+    if (cnword.replace(/[\'\"\s\t]/gi, '').toLowerCase() === data.toLowerCase()) {
       return path;
     }
     if (forecast) {
-      const score = calculateSimilarity(cnword, data);
+      /*const score = calculateSimilarity(cnword, data);
       if (score >= forecast) {
         similarList.push({ word: data, path: path });
-      }
+      }*/
     }
   }
   return null;
 }
 
-function calculateSimilarity(text1, text2) {
+/*function calculateSimilarity(text1, text2) {
   // 将文本转换为词语序列
   const words1 = segment.cut(text1, true);
   const words2 = segment.cut(text2, true);
@@ -310,7 +309,7 @@ function calculateSimilarity(text1, text2) {
   const score = Math.round((similarity + 1) * 5);
 
   return score;
-}
+}*/
 
 // 将词语序列转换为向量
 function wordsToVector(words) {
@@ -347,6 +346,52 @@ function magnitude(vector) {
   }
   return Math.sqrt(result);
 }
+
+// 分词函数
+/*function cutWords(text) {
+  const words = segment.cut(text);
+  // 过滤停用词等
+  return words;
+}*/
+
+// 计算词频函数
+function calcWordFrequency(words) {
+  const freq = {};
+  words.forEach((word) => {
+    freq[word] = freq[word] ? freq[word] + 1 : 1;
+  });
+  return freq;
+}
+
+// 计算相似度得分函数
+/*function calcSimilarityScore(text1, text2) {
+  const words1 = cutWords(text1);
+  const words2 = cutWords(text2);
+
+  const freq1 = calcWordFrequency(words1);
+  const freq2 = calcWordFrequency(words2);
+
+  // 计算余弦相似度
+  let numerator = 0;
+  let denominator1 = 0;
+  let denominator2 = 0;
+
+  Object.keys(freq1).forEach((word) => {
+    if (freq2[word]) {
+      numerator += freq1[word] * freq2[word];
+    }
+    denominator1 += freq1[word] * freq1[word];
+  });
+
+  Object.keys(freq2).forEach((word) => {
+    denominator2 += freq2[word] * freq2[word];
+  });
+
+  const denominator = Math.sqrt(denominator1) * Math.sqrt(denominator2);
+  const score = denominator === 0 ? 0 : numerator / denominator;
+
+  return score * 10; // 返回 1 到 10 的分数
+}*/
 
 module.exports = {
   activate,
