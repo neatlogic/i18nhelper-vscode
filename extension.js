@@ -1,7 +1,8 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const segment = require('nodejieba'); // 导入中文分词库
+const segment = require('@node-rs/jieba'); // 导入中文分词库
+
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -11,32 +12,36 @@ function activate(context) {
     'i18nhelper.configure',
     async () => {
       const folders = vscode.workspace.workspaceFolders;
-      const workspacePath =
-        folders[0] && folders[0].uri && folders[0].uri.fsPath;
-      const settingFilePath = path.join(
-        workspacePath,
-        '.vscode',
-        'i18nhelper-setting.json'
-      );
-      if (!isFileExists(settingFilePath)) {
-        fs.writeFileSync(
-          settingFilePath,
-          JSON.stringify(
-            {
-              i18nhelper: [
-                { type: 'type1', path: 'path1' },
-                { type: 'type2', path: 'path2' },
-              ],
-            },
-            null,
-            2
-          ),
-          'utf8'
+      if (folders && folders.length > 0) {
+        const workspacePath =
+          folders[0] && folders[0].uri && folders[0].uri.fsPath;
+        const settingFilePath = path.join(
+          workspacePath,
+          '.vscode',
+          'i18nhelper-setting.json'
         );
+        if (!isFileExists(settingFilePath)) {
+          fs.writeFileSync(
+            settingFilePath,
+            JSON.stringify(
+              {
+                i18nhelper: [
+                  { type: 'type1', path: 'path1' },
+                  { type: 'type2', path: 'path2' },
+                ],
+              },
+              null,
+              2
+            ),
+            'utf8'
+          );
+        }
+        const fileUri = vscode.Uri.file(settingFilePath);
+        const document = await vscode.workspace.openTextDocument(fileUri);
+        await vscode.window.showTextDocument(document);
+      } else {
+        vscode.window.showErrorMessage('请先创建workspace文件夹');
       }
-      const fileUri = vscode.Uri.file(settingFilePath);
-      const document = await vscode.workspace.openTextDocument(fileUri);
-      await vscode.window.showTextDocument(document);
     }
   );
 
@@ -152,13 +157,15 @@ function detectSelectedTextType() {
 function getConfig() {
   const settingFileName = 'i18nhelper-setting.json';
   const folders = vscode.workspace.workspaceFolders;
-  const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
-  const filePath = path.join(workspacePath, '.vscode', settingFileName);
-  if (isFileExists(filePath)) {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    try {
-      return JSON.parse(fileContent);
-    } catch (e) {}
+  if (folders && folders.length > 0) {
+    const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
+    const filePath = path.join(workspacePath, '.vscode', settingFileName);
+    if (isFileExists(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      try {
+        return JSON.parse(fileContent);
+      } catch (e) {}
+    }
   }
   return {};
 }
@@ -226,19 +233,24 @@ function updateI18nConfig(data, type, key, value) {
 
 function getI18nPaths() {
   try {
-    const folders = vscode.workspace.workspaceFolders;
-    const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
-    const confObj = getConfig();
     const afileList = [];
-    confObj['i18nhelper'].forEach((f) => {
-      const absolutedPath = path.join(workspacePath, f.path);
-      if (isFileExists(absolutedPath)) {
-        afileList.push({
-          type: f.type,
-          path: absolutedPath,
+    const folders = vscode.workspace.workspaceFolders;
+    if (folders && folders.length > 0) {
+      const workspacePath =
+        folders[0] && folders[0].uri && folders[0].uri.fsPath;
+      const confObj = getConfig();
+      if (confObj['i18nhelper'] && confObj['i18nhelper'].length > 0) {
+        confObj['i18nhelper'].forEach((f) => {
+          const absolutedPath = path.join(workspacePath, f.path);
+          if (isFileExists(absolutedPath)) {
+            afileList.push({
+              type: f.type,
+              path: absolutedPath,
+            });
+          }
         });
       }
-    });
+    }
     return afileList;
   } catch (e) {
     vscode.window.showErrorMessage('get i18n config file failed,error:' + e);

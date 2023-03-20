@@ -17,4 +17,5 @@
 ### nothing change
 
 ## [0.0.5] - 2023-03-20
-### nothing change
+### 修改
+- 分词依赖包改成@node-rs/jieba

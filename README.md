@@ -43,11 +43,13 @@ button/zh.json
       "type": "button",
       "path": "/src/resources/assets/languages/button/zh.json"
     }
-  ]
+  ],
+  "format": "$t('?')",
+  "forecast": 8 //0.0.3版本后支持
 }
 ```
 path是从workspace开始的相对路径，type是页面引用时的分类前缀。
 
 2. 选中一段文本，打开鼠标右键，点击i18nhelper:替换，插件会自动根据选中文本替换成配置文件中对应的key，如果key不存在，可以通过输入框输入新的key，插件会自动把key和文本写入对应分类的配置文件中。
 
-3. 0.0.3版本后依赖了nodejieba实现文本模糊匹配功能，如果使用异常，请使用0.0.2版本。
+3. 0.0.3+使用了nodejieba实现文本模糊匹配功能，需要依赖C++编译库，windows环境中如果使用异常，请使用0.0.2版本。
