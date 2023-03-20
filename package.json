@@ -1,24 +1,24 @@
 {
   "name": "i18nhelper",
   "displayName": "i18nhelper",
-  "description": "选中文本后，自动替换中文为i18n键值，如果键值不存在，可以自动添加。",
+  "description": "i18n助手，自动转换选中文本为i18n配置文件中的key，并自动添加不存在的key。",
   "publisher": "neatlogic",
   "icon": "icon/icon.png",
   "repository": {
     "type": "git",
     "url": "https://gitee.com/neat-logic/i18nhelper.git"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.76.0"
   },
   "categories": [
-    "Other"
+    "Snippets",
+    "Language Packs"
   ],
   "activationEvents": [],
   "main": "./extension.js",
   "configuration": {
-    "i18npath": []
   },
   "contributes": {
     "commands": [

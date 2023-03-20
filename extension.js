@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const segment = require('nodejieba'); // 导入中文分词库
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -60,12 +61,32 @@ function activate(context) {
             const d = JSON.parse(fileContent);
             data[type] = d;
           });
-          let foundedkey = findKey(selectedText, data);
+          const similarList = [];
+          let foundedkey = findKey(
+            getForecast(),
+            selectedText,
+            data,
+            null,
+            similarList
+          );
           if (!foundedkey) {
+            let content = '';
+            if (similarList.length > 0) {
+              similarList.forEach((c) => {
+                if (content) {
+                  content += ',';
+                }
+                content += c.word + '(' + c.path + ')';
+              });
+              vscode.window.showInformationMessage(
+                '已存在文案参考:' + content,
+                { detail: content },
+                '关闭'
+              );
+            }
             await vscode.window
               .showInputBox({
-                prompt: 'new key:',
-                placeHolder: 'eg:page.name',
+                placeHolder: 'please input new key, eg:page.name',
               })
               .then((input) => {
                 if (input) {
@@ -128,7 +149,7 @@ function detectSelectedTextType() {
   return '';
 }
 
-function getFormat() {
+function getConfig() {
   const settingFileName = 'i18nhelper-setting.json';
   const folders = vscode.workspace.workspaceFolders;
   const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
@@ -136,10 +157,22 @@ function getFormat() {
   if (isFileExists(filePath)) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     try {
-      const confObj = JSON.parse(fileContent);
-      return confObj['format'] || '';
+      return JSON.parse(fileContent);
     } catch (e) {}
   }
+  return;
+}
+
+function getFormat() {
+  return getConfig()['format'] || '';
+}
+
+function getForecast() {
+  const f = parseInt(getConfig()['forecast'] || 0);
+  if (isNaN(f)) {
+    return 0;
+  }
+  return f;
 }
 
 function updateI18nConfig(data, type, key, value) {
@@ -192,28 +225,23 @@ function updateI18nConfig(data, type, key, value) {
 }
 
 function getI18nPaths() {
-  const settingFileName = 'i18nhelper-setting.json';
-  const folders = vscode.workspace.workspaceFolders;
-  const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
-  const filePath = path.join(workspacePath, '.vscode', settingFileName);
-  if (isFileExists(filePath)) {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    try {
-      const confObj = JSON.parse(fileContent);
-      const afileList = [];
-      confObj['i18nhelper'].forEach((f) => {
-        const absolutedPath = path.join(workspacePath, f.path);
-        if (isFileExists(absolutedPath)) {
-          afileList.push({
-            type: f.type,
-            path: absolutedPath,
-          });
-        }
-      });
-      return afileList;
-    } catch (e) {
-      vscode.window.showErrorMessage('get i18n config file failed,error:' + e);
-    }
+  try {
+    const folders = vscode.workspace.workspaceFolders;
+    const workspacePath = folders[0] && folders[0].uri && folders[0].uri.fsPath;
+    const confObj = getConfig();
+    const afileList = [];
+    confObj['i18nhelper'].forEach((f) => {
+      const absolutedPath = path.join(workspacePath, f.path);
+      if (isFileExists(absolutedPath)) {
+        afileList.push({
+          type: f.type,
+          path: absolutedPath,
+        });
+      }
+    });
+    return afileList;
+  } catch (e) {
+    vscode.window.showErrorMessage('get i18n config file failed,error:' + e);
   }
   return [];
 }
@@ -228,11 +256,11 @@ function isFileExists(filePath) {
 }
 
 // 寻找中文匹配的key
-function findKey(cnword, data, path) {
+function findKey(forecast, cnword, data, path, similarList) {
   if (typeof data === 'object' && data !== null) {
     for (const [k, v] of Object.entries(data)) {
       const new_path = path ? `${path}.${k}` : k;
-      const p = findKey(cnword, v, new_path);
+      const p = findKey(forecast, cnword, v, new_path, similarList);
       if (p !== null) {
         return p;
       }
@@ -241,8 +269,71 @@ function findKey(cnword, data, path) {
     if (cnword.toLowerCase() === data.toLowerCase()) {
       return path;
     }
+    if (forecast) {
+      const score = calculateSimilarity(cnword, data);
+      if (score >= forecast) {
+        similarList.push({ word: data, path: path });
+      }
+    }
   }
   return null;
+}
+
+function calculateSimilarity(text1, text2) {
+  // 将文本转换为词语序列
+  const words1 = segment.cut(text1, true);
+  const words2 = segment.cut(text2, true);
+
+  // 将词语序列转换为向量
+  const vector1 = wordsToVector(words1);
+  const vector2 = wordsToVector(words2);
+
+  // 计算余弦相似度
+  const dotProduct = dot(vector1, vector2);
+  const magnitude1 = magnitude(vector1);
+  const magnitude2 = magnitude(vector2);
+  const similarity = dotProduct / (magnitude1 * magnitude2);
+
+  // 将相似度转换为1-10的分数
+  const score = Math.round((similarity + 1) * 5);
+
+  return score;
+}
+
+// 将词语序列转换为向量
+function wordsToVector(words) {
+  const vector = {};
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    vector[word] = (vector[word] || 0) + 1;
+    if (i > 0) {
+      const prevWord = words[i - 1] + word;
+      vector[prevWord] = (vector[prevWord] || 0) + 1;
+    }
+  }
+  return vector;
+}
+
+// 计算向量点积
+function dot(vector1, vector2) {
+  let result = 0;
+  for (const key in vector1) {
+    if (vector1.hasOwnProperty(key) && vector2.hasOwnProperty(key)) {
+      result += vector1[key] * vector2[key];
+    }
+  }
+  return result;
+}
+
+// 计算向量大小
+function magnitude(vector) {
+  let result = 0;
+  for (const key in vector) {
+    if (vector.hasOwnProperty(key)) {
+      result += vector[key] ** 2;
+    }
+  }
+  return Math.sqrt(result);
 }
 
 module.exports = {
