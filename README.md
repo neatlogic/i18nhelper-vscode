@@ -43,9 +43,7 @@ button/zh.json
       "type": "button",
       "path": "/src/resources/assets/languages/button/zh.json"
     }
-  ],
-  "format": "$t('?')",
-  "forecast": 8 //0.0.3版本后支持
+  ]
 }
 ```
 path是从workspace开始的相对路径，type是页面引用时的分类前缀。

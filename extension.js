@@ -66,14 +66,16 @@ function activate(context) {
             data[type] = d;
           });
           const similarList = [];
+          const extendData = {};
           let foundedkey = findKey(
             getForecast(),
             selectedText,
             data,
             null,
-            similarList
+            similarList,
+            extendData
           );
-          if (!foundedkey) {
+          if (!foundedkey && !selectedText.includes(' ')) {
             if (similarList.length > 0) {
               let content = '';
               similarList.forEach((c) => {
@@ -100,7 +102,7 @@ function activate(context) {
                         data,
                         input.split('.')[0],
                         input,
-                        selectedText
+                        selectedText.replace(/[\'\"]/gi, '')
                       );
                       foundedkey = input;
                     } catch (e) {
@@ -109,20 +111,24 @@ function activate(context) {
                   }
                 }
               });
+          } else {
+            vscode.window.showWarningMessage('请不要选中多段文案');
           }
           if (foundedkey) {
             editor.edit((editBuilder) => {
-              if (getFormat()) {
-                let newword = getFormat().replace('?', foundedkey);
-                if (detectSelectedTextType() === 'script') {
-                  if (!newword.startsWith('this.')) {
-                    newword = 'this.' + newword;
-                  }
+              let newword = "$t('" + foundedkey + "'";
+              if (detectSelectedTextType() === 'script') {
+                if (!newword.startsWith('this.')) {
+                  newword = 'this.' + newword;
                 }
-                editBuilder.replace(selection, newword);
-              } else {
-                editBuilder.replace(selection, foundedkey);
               }
+              if (JSON.stringify(extendData) != '{}') {
+                newword +=
+                  ',' + JSON.stringify(extendData).replace(/"/g, "'") + ')';
+              } else {
+                newword += ')';
+              }
+              editBuilder.replace(selection, newword);
             });
           }
         }
@@ -267,17 +273,20 @@ function isFileExists(filePath) {
 }
 
 // 寻找中文匹配的key
-function findKey(forecast, cnword, data, path, similarList) {
+function findKey(forecast, cnword, data, path, similarList, extendData) {
+  cnword = cnword.trim();
   if (typeof data === 'object' && data !== null) {
     for (const [k, v] of Object.entries(data)) {
       const new_path = path ? `${path}.${k}` : k;
-      const p = findKey(forecast, cnword, v, new_path, similarList);
+      const p = findKey(forecast, cnword, v, new_path, similarList, extendData);
       if (p !== null) {
         return p;
       }
     }
   } else if (typeof data === 'string') {
-    if (cnword.replace(/[\'\"\s\t]/gi, '').toLowerCase() === data.toLowerCase()) {
+    if (cnword.replace(/[\'\"]/gi, '').toLowerCase() === data.toLowerCase()) {
+      return path;
+    } else if (findExtend(data, cnword.replace(/[\'\"]/gi, ''), extendData)) {
       return path;
     }
     if (forecast) {
@@ -288,6 +297,29 @@ function findKey(forecast, cnword, data, path, similarList) {
     }
   }
   return null;
+}
+
+function findExtend(i18ntext, text, data) {
+  const str1 = i18ntext.split(/({.+?})/g).filter((s) => s !== '');
+  const str2 = text.split(/[\s]+/g).filter((s) => s !== '');
+  if (str1.length > 1 && str1.length === str2.length) {
+    let isSame = true;
+    for (let i = 0; i < str1.length; i++) {
+      if (str1[i].toLowerCase() != str2[i].toLowerCase()) {
+        if (str1[i].startsWith('{') && str1[i].endsWith('}')) {
+          data[str1[i].replace('{', '').replace('}', '')] = str2[i];
+        } else {
+          Object.keys(data).forEach((key) => {
+            delete data[key];
+          });
+          isSame = false;
+          break;
+        }
+      }
+    }
+    return isSame;
+  }
+  return false;
 }
 
 /*function calculateSimilarity(text1, text2) {
