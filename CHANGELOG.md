@@ -33,3 +33,30 @@
 ### 修改
 - 去掉format配置，默认都是组装成$t('xx')的方式进行替换。
 - 支持带数据的key替换，选中文本需要用空格分开就能识别，例如有key:pleaseinput="请输入{target}"，选中文本为：请输入 名称，就能识别出来并自动替换成：$t('pleaseinput',{target:'名称'})
+
+## [0.0.9] 2023-03-22
+### 新增
+- 增加翻译功能，利用百度api进行翻译，配置文件改为如下方式配置：
+``` json
+{
+  "i18nhelper": [
+    {
+      "type": "page",
+      "path": "/src/resources/assets/languages/page/zh.json",
+      "path_en": "/src/resources/assets/languages/page/en.json"//对应语言文件路径，key符合path_language规范。
+    },
+    {
+      "type": "term",
+      "path": "/src/resources/assets/languages/term/zh.json",
+      "path_en": "/src/resources/assets/languages/term/en.json"
+    }
+  ],
+  "translate": {
+    "source": "zh",
+    "target": ["en"],//目标语言列表，支持同时翻译成多个目标语言
+    "appid": "百度appid",
+    "secret": "百度密钥"
+  }
+}
+
+``` 
