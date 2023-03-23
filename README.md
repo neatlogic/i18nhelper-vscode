@@ -43,11 +43,17 @@ button/zh.json
       "type": "button",
       "path": "/src/resources/assets/languages/button/zh.json"
     }
-  ]
+  ],
+   "translate": {
+    "source": "zh",
+    "target": ["en"],//目标语言列表，支持同时翻译成多个目标语言
+    "appid": "百度appid",
+    "secret": "百度密钥"
+  }
 }
 ```
 path是从workspace开始的相对路径，type是页面引用时的分类前缀。
 
 2. 选中一段文本，打开鼠标右键，点击i18nhelper:替换，插件会自动根据选中文本替换成配置文件中对应的key，如果key不存在，可以通过输入框输入新的key，插件会自动把key和文本写入对应分类的配置文件中。
 
-3. 0.0.3+使用了nodejieba实现文本模糊匹配功能，需要依赖C++编译库，windows环境中如果使用异常，请使用0.0.2版本。
+3. 如果配置了translate，会启动自动翻译，翻译来源百度开放api，请自行到[百度翻译](http://api.fanyi.baidu.com/)开放平台申请账号。

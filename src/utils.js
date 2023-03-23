@@ -37,16 +37,22 @@ function getI18nPaths(language) {
       const confObj = getConfig();
       if (confObj['i18nhelper'] && confObj['i18nhelper'].length > 0) {
         confObj['i18nhelper'].forEach((f) => {
-          let p = f.path;
-          if (language && f['path_' + language]) {
-            p = f['path_' + language];
+          let p;
+          if (language) {
+            if (f['path_' + language]) {
+              p = f['path_' + language];
+            }
+          } else {
+            p = f.path;
           }
-          const absolutedPath = path.join(workspacePath, p);
-          if (isFileExists(absolutedPath)) {
-            afileList.push({
-              type: f.type,
-              path: absolutedPath,
-            });
+          if (p) {
+            const absolutedPath = path.join(workspacePath, p);
+            if (isFileExists(absolutedPath)) {
+              afileList.push({
+                type: f.type,
+                path: absolutedPath,
+              });
+            }
           }
         });
       }
