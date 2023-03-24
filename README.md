@@ -3,6 +3,7 @@
 ## 功能
 
 自动转换选中文本为i18n中的key，如果中文不存在，则自动往对应的i18n配置文件中写入key和文本内容。
+![intro.gif](images/intro.gif)
 
 ## 使用要求
 
@@ -26,6 +27,7 @@ button/zh.json
 页面引用：`$t('page.name')`或`$t('button.submit')`
 
 如果您的i18n组织架构和上面类似，则可以使用本插件方便的管理所有key和文案。
+
 
 ## 使用方式
 
