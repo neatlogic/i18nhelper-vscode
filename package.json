@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/neatlogic/i18nhelper.git"
   },
-  "version": "0.0.10",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -23,11 +23,11 @@
     "commands": [
       {
         "command": "i18nhelper.configure",
-        "title": "i18nhelper:配置"
+        "title": "i18n-config"
       },
       {
         "command": "i18nhelper.replace",
-        "title": "i18nhelper:替换"
+        "title": "i18n-replace"
       }
     ],
     "menus": {
