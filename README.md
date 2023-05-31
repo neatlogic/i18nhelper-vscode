@@ -1,6 +1,13 @@
-# i18nhelper
-
 中文 / [English](README.en.md)
+
+<p align="left">
+    <a href="https://opensource.org/license/gpl-3-0/" alt="License">
+        <img src="https://img.shields.io/badge/License-GPL--3.0-green" /></a>
+<a target="_blank" href="https://join.slack.com/t/neatlogichome/shared_invite/zt-1w037axf8-r_i2y4pPQ1Z8FxOkAbb64w">
+<img src="https://img.shields.io/badge/Slack-Neatlogic-orange" /></a>
+</p>
+
+---
 ## 功能
 
 自动转换选中文本为i18n中的key，如果中文不存在，则自动往对应的i18n配置文件中写入key和文本内容。
