@@ -264,7 +264,6 @@ async function applyDecorations(editor) {
       }
     }
     editor.setDecorations(decorationType, ranges);
-    console.log(editor.getDecorations());
   }
 }
 
