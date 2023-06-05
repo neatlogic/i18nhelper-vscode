@@ -11,7 +11,7 @@
 ## 功能
 
 自动转换选中文本为i18n中的key，如果中文不存在，则自动往对应的i18n配置文件中写入key和文本内容。
-![intro.gif](images/intro.apng)
+![intro.gif](images/intro.gif)
 
 ## 使用要求
 

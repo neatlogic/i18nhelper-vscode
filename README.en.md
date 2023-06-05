@@ -14,7 +14,7 @@
 ## Feature
 
 Automatically convert the selected text to the key in i18n. If the key does not exist, it will automatically write the key and text content to the corresponding i18n configuration file.
-![intro.gif](images/intro.apng)
+![intro.gif](images/intro.gif)
 
 ## Requirements
 

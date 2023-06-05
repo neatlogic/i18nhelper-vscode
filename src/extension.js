@@ -221,14 +221,16 @@ function findExtend(i18ntext, text, data) {
 const editorDecorations = new Map();
 
 async function applyDecorations(editor) {
-  if (editorDecorations.get(editor)) {
-    editorDecorations.get(editor).dispose();
-    editorDecorations.delete(editor);
-  }
   const pathList = utils.getI18nPaths();
   if (pathList && pathList.length > 0) {
-    let decorationType = vscode.window.createTextEditorDecorationType({});
-    editorDecorations.set(editor, decorationType);
+    let decorationType = null;
+    if (editorDecorations.get(editor)) {
+      decorationType = editorDecorations.get(editor);
+    } else {
+      decorationType = vscode.window.createTextEditorDecorationType({});
+      editorDecorations.set(editor, decorationType);
+    }
+   
     let text = editor.document.getText();
     let ranges = [];
     let regex = /\$t\((['"])([^'"]*)\1/g;
@@ -262,6 +264,7 @@ async function applyDecorations(editor) {
       }
     }
     editor.setDecorations(decorationType, ranges);
+    console.log(editor.getDecorations());
   }
 }
 
