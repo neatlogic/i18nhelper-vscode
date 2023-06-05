@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/neatlogic/i18nhelper.git"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -16,7 +16,9 @@
     "Snippets",
     "Language Packs"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./src/extension.js",
   "configuration": {},
   "contributes": {

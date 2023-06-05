@@ -121,4 +121,52 @@ function updateI18nConfig(data, type, key, value, language) {
   }
 }
 
-module.exports = { getConfig, isFileExists, getI18nPaths, updateI18nConfig };
+async function findValueByKey(filePath, key) {
+  const fileUri = vscode.Uri.file(path.resolve(filePath));
+  let fileContent;
+
+  try {
+    const document = await vscode.workspace.openTextDocument(fileUri);
+    fileContent = document.getText();
+  } catch (err) {
+    console.error(`Cannot open file: ${filePath}`);
+    return '';
+  }
+
+  let json;
+  try {
+    json = JSON.parse(fileContent);
+  } catch (err) {
+    console.error(`Error parsing JSON from file: ${filePath}`);
+    return null;
+  }
+
+  const keys = key.split('.');
+  for (let i = 0; i < keys.length - 1; i++) {
+    const subKey = keys[i];
+    if (
+      json[subKey] &&
+      typeof json[subKey] === 'object' &&
+      !Array.isArray(json[subKey])
+    ) {
+      json = json[subKey];
+    } else {
+      if (i < keys.length - 2) {
+        return null;
+      }
+      break;
+    }
+  }
+  if (json[keys[keys.length - 1]]) {
+    return json[keys[keys.length - 1]].toString();
+  }
+  return null;
+}
+
+module.exports = {
+  getConfig,
+  isFileExists,
+  getI18nPaths,
+  updateI18nConfig,
+  findValueByKey,
+};

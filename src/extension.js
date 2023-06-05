@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const utils = require('./utils.js');
 const translate = require('./translate.js');
+const { window, workspace } = require('vscode');
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -118,6 +119,39 @@ function activate(context) {
 
   context.subscriptions.push(replaceCommand);
   context.subscriptions.push(settingCommand);
+  // 添加事件监听器，当活动的文本编辑器发生变化时，更新提示
+  context.subscriptions.push(
+    window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        applyDecorations(editor);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeVisibleTextEditors((editors) => {
+      // 对当前打开的所有编辑器，检查它们是否在 editorDecorations 映射中。
+      // 如果它们不在映射中，那么它们就是非活动的，我们需要销毁它们的装饰类型。
+      for (const [editor, decorationType] of editorDecorations) {
+        if (!editors.includes(editor)) {
+          decorationType.dispose();
+          editorDecorations.delete(editor);
+        }
+      }
+    })
+  );
+
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    let activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+      applyDecorations(activeEditor);
+    }
+  });
+
+  let activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor) {
+    applyDecorations(activeEditor);
+  }
 }
 
 // This method is called when your extension is deactivated
@@ -181,6 +215,54 @@ function findExtend(i18ntext, text, data) {
     return isSame;
   }
   return false;
+}
+
+//记录所有decoration装饰器，当窗口unactive销毁没用的装饰器
+const editorDecorations = new Map();
+
+async function applyDecorations(editor) {
+  if (editorDecorations.get(editor)) {
+    editorDecorations.get(editor).dispose();
+    editorDecorations.delete(editor);
+  }
+  const pathList = utils.getI18nPaths();
+  if (pathList && pathList.length > 0) {
+    let decorationType = vscode.window.createTextEditorDecorationType({});
+    editorDecorations.set(editor, decorationType);
+    let text = editor.document.getText();
+    let ranges = [];
+    let regex = /\$t\((['"])([^'"]*)\1/g;
+
+    let match;
+    while ((match = regex.exec(text))) {
+      let key = match[2]; // "xx" 或者 'xx'
+      const type = key.substring(0, key.indexOf('.'));
+      const realKey = key.substring(key.indexOf('.') + 1);
+      if (type) {
+        const path = pathList.find((d) => d.type === type);
+        if (path) {
+          const translatedText = await utils.findValueByKey(path.path, realKey);
+          if (translatedText) {
+            let start = editor.document.positionAt(match.index + 4);
+            let end = editor.document.positionAt(match.index + 4 + key.length);
+            let range = new vscode.Range(start, end);
+            let decoration = {
+              range,
+              renderOptions: {
+                after: {
+                  contentText: '·' + translatedText,
+                  opacity: '0.6',
+                },
+              },
+            };
+            ranges.push(decoration);
+            regex.lastIndex = match.index + match[0].length;
+          }
+        }
+      }
+    }
+    editor.setDecorations(decorationType, ranges);
+  }
 }
 
 module.exports = {
