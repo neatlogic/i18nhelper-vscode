@@ -1,4 +1,3 @@
-
 [中文](README.md) / English
 
 <p>
@@ -21,58 +20,95 @@ Automatically convert the selected text to the key in i18n. If the key does not 
 This plugin requires i18n files to be organized by type, for example, there are two i18n configuration files page/zh.json and button/zh.json respectively, which manage page translation and button translation respectively. The internal organizational structure is:
 
 page/zh.json:
+
 ```json
 {
-"name": "name",
-"age": "age"
-}
-```
-button/zh.json
-```json
-{
-"submit": "submit",
-"delete": "delete"
+  "name": "name",
+  "age": "age"
 }
 ```
 
-Page reference: `$t('page.name')` or `$t('button.submit')`
+`button/zh.json`
+
+```json
+{
+  "submit": "submit",
+  "delete": "delete"
+}
+```
+
+Usage in code:
+
+```js
+$t("page.name");
+$t("button.submit");
+```
 
 If your i18n organizational structure is similar to the above, you can use this plugin to conveniently manage all keys and copywriting.
 
-
 ## How to use
 
-### First time use
-1. Open the right mouse button menu in the editor, and click i18nhelper: configure configuration file path.
+1. Open the editor context menu and click `i18nhelper: configure` to create or edit the config file.
 
 ```json
 {
-   "i18nhelper": [
-     {
-       "type": "page",
-       "path": "/src/resources/assets/languages/page/zh.json",
-       "path_en": "/src/resources/assets/languages/page/en.json", //target language config file
-       "path_jp": "/src/resources/assets/languages/page/jp.json"//target language config file
-     },
-     {
-       "type": "button",
-       "path": "/src/resources/assets/languages/button/zh.json",
-       "path_en": "/src/resources/assets/languages/button/en.json", //target language config file
-       "path_jp": "/src/resources/assets/languages/button/jp.json"//target language config file
-     }
-   ],
-    "translate": {
-     "source": "en",
-     "target": ["en","jp"], //target language list
-     "appid": "Baidu appid",
-     "secret": "Baidu key"
-   }
+  "i18nhelper": [
+    {
+      "type": "page",
+      "path": "/src/resources/assets/languages/page/zh.json",
+      "path_en": "/src/resources/assets/languages/page/en.json", //target language config file
+      "path_jp": "/src/resources/assets/languages/page/jp.json" //target language config file
+    },
+    {
+      "type": "button",
+      "path": "/src/resources/assets/languages/button/zh.json",
+      "path_en": "/src/resources/assets/languages/button/en.json", //target language config file
+      "path_jp": "/src/resources/assets/languages/button/jp.json" //target language config file
+    }
+  ],
+  "format": "$t(#('?')#(,?))",
+  "forecast": 8,
+  "translate": {
+    "source": "zh",
+    "target": ["en", "jp"], //target language list
+    "appid": "Baidu appid",
+    "secret": "Baidu key"
+  }
 }
 ```
-path is the relative path starting from the workspace, and type is the category prefix when referencing the page.
 
-2. Select a piece of text, open the right mouse button, click i18nhelper: replace, the plug-in will automatically replace the selected text with the corresponding key in the configuration file, if the key does not exist, you can enter a new key through the input box, the plug-in will automatically replace the key and The text is written to the configuration file corresponding to the category.
+Notes:
 
-3. If translate is configured, automatic translation will be started. The source of the translation is Baidu’s open api. Please go to [Baidu Translation] (http://api.fanyi.baidu.com/) open platform to apply for an account.
+- `path` is a relative path from the workspace root
+- the top-level `type` is the category prefix used in i18n keys
 
-4. Configure shortcut keys, target command: i18nhelper.replace.
+If one category needs to write different keys into different module files, you can configure `children` under that category:
+
+```json
+{
+  "type": "button",
+  "path": "/src/resources/assets/languages/button/zh.json",
+  "path_en": "/src/resources/assets/languages/button/en.json",
+  "children": [
+    {
+      "type": "button.operation.",
+      "path": "/src/commercial-module/module/languages/button/zh.json",
+      "path_en": "/src/commercial-module/module/languages/button/en.json"
+    }
+  ]
+}
+```
+
+Notes:
+
+- `children` defines additional write rules
+- child `type` is used to match the full i18n key
+- when a key starts with that value, the extension writes into the corresponding child `path` and `path_en`
+
+2. Select some text, open the context menu, and click `i18nhelper: replace`.  
+   The extension replaces the selected text with the matching i18n key.  
+   If the key does not exist, you can enter a new key and the extension will write it into the corresponding i18n files.
+
+3. If `translate` is configured, the extension can automatically write translated text by using the Baidu Translate API.
+
+4. You can bind a shortcut key to `i18nhelper.replace`.

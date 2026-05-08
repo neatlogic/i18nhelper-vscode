@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const utils = require('./utils.js');
 const translate = require('./translate.js');
-const { window, workspace } = require('vscode');
+const { window } = require('vscode');
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -26,10 +26,10 @@ function activate(context) {
             settingFilePath,
             JSON.stringify(
               {
-                i18nhelper: [
-                  { type: 'type1', path: 'path1' },
-                  { type: 'type2', path: 'path2' },
-                ],
+                i18nhelper: [],
+                format: "$t(#('?')#(,?))",
+                forecast: 8,
+                translate: {},
               },
               null,
               2
@@ -57,16 +57,10 @@ function activate(context) {
       const selection = editor.selection;
       const selectedText = editor.document.getText(selection);
       if (selectedText) {
-        const data = {};
+        const editorFilePath = editor.document.uri.fsPath;
+        const data = utils.loadScopedI18nData(editorFilePath);
         const fileList = utils.getI18nPaths();
         if (fileList.length > 0) {
-          fileList.forEach((file) => {
-            const type = file.type;
-            const filePath = file.path;
-            const fileContent = fs.readFileSync(filePath, 'utf8');
-            const d = JSON.parse(fileContent);
-            data[type] = d;
-          });
           const extendData = {};
           let foundedkey = findKey(selectedText, data, null, extendData);
           if (!foundedkey) {
@@ -76,18 +70,16 @@ function activate(context) {
                   placeHolder: 'please input new key, eg:page.name',
                 })
                 .then((input) => {
-                  if (input) {
-                    if (input.includes('.')) {
-                      try {
-                        const newKey = input;
-                        const type = input.split('.')[0];
-                        const newText = selectedText.replace(/[\'\"]/gi, '');
-                        utils.updateI18nConfig(data, type, newKey, newText);
-                        translate.translate(type, newKey, newText);
-                        foundedkey = input;
-                      } catch (e) {
-                        vscode.window.showErrorMessage(e);
-                      }
+                  if (input && input.includes('.')) {
+                    try {
+                      const newKey = input;
+                      const type = input.split('.')[0];
+                      const newText = selectedText.replace(/[\'\"]/gi, '');
+                      utils.updateI18nConfig(type, newKey, newText, null, editorFilePath);
+                      translate.translate(type, newKey, newText, editorFilePath);
+                      foundedkey = input;
+                    } catch (e) {
+                      vscode.window.showErrorMessage(e);
                     }
                   }
                 });
@@ -103,7 +95,7 @@ function activate(context) {
                   newword = 'this.' + newword;
                 }
               }
-              if (JSON.stringify(extendData) != '{}') {
+              if (JSON.stringify(extendData) !== '{}') {
                 newword +=
                   ',' + JSON.stringify(extendData).replace(/"/g, "'") + ')';
               } else {
@@ -141,7 +133,7 @@ function activate(context) {
     })
   );
 
-  vscode.workspace.onDidChangeTextDocument((event) => {
+  vscode.workspace.onDidChangeTextDocument(() => {
     let activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
       applyDecorations(activeEditor);
@@ -178,10 +170,10 @@ function findKey(cnword, data, path, extendData) {
   cnword = cnword.trim();
   if (typeof data === 'object' && data !== null) {
     for (const [k, v] of Object.entries(data)) {
-      const new_path = path ? `${path}.${k}` : k;
-      const p = findKey(cnword, v, new_path, extendData);
-      if (p !== null) {
-        return p;
+      const newPath = path ? `${path}.${k}` : k;
+      const foundPath = findKey(cnword, v, newPath, extendData);
+      if (foundPath !== null) {
+        return foundPath;
       }
     }
   } else if (typeof data === 'string') {
@@ -200,7 +192,7 @@ function findExtend(i18ntext, text, data) {
   if (str1.length > 1 && str1.length === str2.length) {
     let isSame = true;
     for (let i = 0; i < str1.length; i++) {
-      if (str1[i].toLowerCase() != str2[i].toLowerCase()) {
+      if (str1[i].toLowerCase() !== str2[i].toLowerCase()) {
         if (str1[i].startsWith('{') && str1[i].endsWith('}')) {
           data[str1[i].replace('{', '').replace('}', '')] = str2[i];
         } else {
@@ -223,6 +215,7 @@ const editorDecorations = new Map();
 async function applyDecorations(editor) {
   const pathList = utils.getI18nPaths();
   if (pathList && pathList.length > 0) {
+    const data = utils.loadI18nData();
     let decorationType = null;
     if (editorDecorations.get(editor)) {
       decorationType = editorDecorations.get(editor);
@@ -230,36 +223,33 @@ async function applyDecorations(editor) {
       decorationType = vscode.window.createTextEditorDecorationType({});
       editorDecorations.set(editor, decorationType);
     }
-   
+
     let text = editor.document.getText();
     let ranges = [];
     let regex = /\$t\((['"])([^'"]*)\1/g;
 
     let match;
     while ((match = regex.exec(text))) {
-      let key = match[2]; // "xx" 或者 'xx'
+      let key = match[2]; // "xx" 鎴栬€?'xx'
       const type = key.substring(0, key.indexOf('.'));
       const realKey = key.substring(key.indexOf('.') + 1);
-      if (type) {
-        const path = pathList.find((d) => d.type === type);
-        if (path) {
-          const translatedText = await utils.findValueByKey(path.path, realKey);
-          if (translatedText) {
-            let start = editor.document.positionAt(match.index + 4);
-            let end = editor.document.positionAt(match.index + 4 + key.length);
-            let range = new vscode.Range(start, end);
-            let decoration = {
-              range,
-              renderOptions: {
-                after: {
-                  contentText: '·' + translatedText,
-                  opacity: '0.6',
-                },
+      if (type && data[type]) {
+        const translatedText = utils.findValueInObject(data[type], realKey);
+        if (translatedText) {
+          let start = editor.document.positionAt(match.index + 4);
+          let end = editor.document.positionAt(match.index + 4 + key.length);
+          let range = new vscode.Range(start, end);
+          let decoration = {
+            range,
+            renderOptions: {
+              after: {
+                contentText: '·' + translatedText,
+                opacity: '0.6',
               },
-            };
-            ranges.push(decoration);
-            regex.lastIndex = match.index + match[0].length;
-          }
+            },
+          };
+          ranges.push(decoration);
+          regex.lastIndex = match.index + match[0].length;
         }
       }
     }

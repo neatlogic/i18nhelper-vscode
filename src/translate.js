@@ -1,9 +1,8 @@
 const crypto = require('crypto');
-const fs = require('fs');
 const utils = require('./utils.js');
 const axios = require('axios').default;
 
-function translate(type, newKey, newText) {
+function translate(type, newKey, newText, editorFilePath) {
   const config = utils.getConfig()['translate'];
   if (config) {
     const source = config['source'];
@@ -35,17 +34,7 @@ function translate(type, newKey, newText) {
             ) {
               const translated = res.data.trans_result[0].dst;
               if (translated) {
-                const data = {};
-                const fileList = utils.getI18nPaths(t);
-                if (fileList.length > 0) {
-                  fileList.forEach((file) => {
-                    const filePath = file.path;
-                    const fileContent = fs.readFileSync(filePath, 'utf8');
-                    const d = JSON.parse(fileContent);
-                    data[file.type] = d;
-                  });
-                  utils.updateI18nConfig(data, type, newKey, translated, t);
-                }
+                utils.updateI18nConfig(type, newKey, translated, t, editorFilePath);
               }
             }
           });
