@@ -1,10 +1,17 @@
-# I18n ¹æÔòËµÃ÷
+# I18n è§„åˆ™è¯´æ˜
 
-±¾ÎÄµµËµÃ÷ `i18nhelper-setting.json` µÄÍÆ¼öÅäÖÃ·½Ê½£¬ÒÔ¼°²å¼ş¶ÁÈ¡¡¢Ğ´Èë i18n ÎÄ¼şÊ±µÄ¹æÔò¡£
+æœ¬æ–‡æ¡£åªè¯´æ˜ä¸‰ç±»è§„åˆ™ï¼šåŸºç¡€æ¨¡å—ã€å•†ä¸šç‰ˆæœ¬çš„ `router` / `term`ã€å•†ä¸šæ¨¡å—ä¸åŸºç¡€æ¨¡å—åŒåæ—¶çš„è¯»å–å’Œå†™å…¥è¾¹ç•Œã€‚
 
-## ÍÆ¼öÅäÖÃ
+## 1. åŸºç¡€æ¨¡å—
 
-ÆÕÍ¨·ÖÀàÖ»ĞèÒªÅäÖÃÀàĞÍºÍÖ÷ÓïÑÔÎÄ¼şÂ·¾¶¼´¿É¡£
+åŸºç¡€æ¨¡å—æŒ‡ä¸åœ¨ `/src/commercial-module/` æˆ– `/src/community-module/` ä¸‹çš„é¡µé¢ã€‚
+
+- `dialog`ã€`form`ã€`message`ã€`page` æ˜¯å…¬å…±è¯­è¨€åŒ…ï¼Œå¯ä»¥è·¨æ¨¡å—å¤ç”¨
+- åŸºç¡€æ¨¡å—æ–°å¢ key æ—¶ï¼Œé»˜è®¤å†™å…¥å½“å‰ç±»å‹é…ç½®çš„ `path` / `path_en`
+- åŸºç¡€æ¨¡å—çš„ `router`ã€`term` ä¹Ÿå†™å…¥åŸºç¡€å…¬å…±è¯­è¨€åŒ…ï¼Œä¾‹å¦‚ `/src/resources/assets/languages/router/zh.json`ã€`/src/resources/assets/languages/term/zh.json`
+- è‡ªåŠ¨è¡¥å……è¯»å–çš„å…±äº«è¯­è¨€æ–‡ä»¶åªå‚ä¸è¯»å–ï¼Œä¸æ”¹å˜é»˜è®¤å†™å…¥ä½ç½®
+
+æ™®é€šåˆ†ç±»é…ç½®ç¤ºä¾‹ï¼š
 
 ```json
 {
@@ -14,168 +21,52 @@
 }
 ```
 
-### ×Ö¶ÎËµÃ÷
+## 2. å•†ä¸šç‰ˆæœ¬çš„ router å’Œ term
 
-- `type`£º·ÖÀàÇ°×º£¬ÀıÈç `dialog`¡¢`form`¡¢`message`¡¢`page`
-- `path`£ºµ±Ç°ÏîÄ¿ÖĞÎÄÓïÑÔÎÄ¼şÂ·¾¶£¬Ò²ÊÇÄ¬ÈÏĞ´ÈëÎ»ÖÃ
-- `path_en`£ºµ±Ç°ÏîÄ¿Ó¢ÎÄÓïÑÔÎÄ¼şÂ·¾¶
+å½“å‰æ–‡ä»¶ä½äº `/src/commercial-module/<module>/` æ—¶ï¼Œ`router` å’Œ `term` è¦æŒ‰å½“å‰å•†ä¸šæ¨¡å—è¯»å†™ï¼Œä¸èƒ½å†™å›åŸºç¡€å…¬å…± `router` / `term`ã€‚
 
-## ¶ÁÈ¡¹æÔò
+- å½“å‰æ¨¡å—çš„è·¯ç”± key å†™ä¸º `router.<module>.xxx`
+- å½“å‰æ¨¡å—çš„æœ¯è¯­ key å†™ä¸º `term.<module>.xxx`
+- æ–°å¢ `router` / `term` key æ—¶ï¼Œå†™å…¥å½“å‰å•†ä¸šæ¨¡å—è‡ªå·±çš„è¯­è¨€æ–‡ä»¶
+- å…¬å…± `router` / `term` åªä½œä¸ºåŒåæ—§ key çš„å…œåº•è¯»å–æ¥æºï¼Œä¸ä½œä¸ºå•†ä¸šæ¨¡å—æ–°å¢ key çš„å†™å…¥ç›®æ ‡
+- ä¸å…è®¸åœ¨å½“å‰å•†ä¸šæ¨¡å—ä¸­æ–°å¢æˆ–åæŸ¥å…¶ä»–æ¨¡å—å‘½åç©ºé—´ï¼Œä¾‹å¦‚ `term.<other-module>.xxx`
+- `dialog`ã€`form`ã€`message`ã€`page` ä»ç„¶å¯ä»¥ä½œä¸ºå…¬å…±è¯­è¨€åŒ…è·¨æ¨¡å—å¤ç”¨
 
-ÆÕÍ¨·ÖÀà°´ÏÂÃæË³Ğò¶ÁÈ¡£º
-
-1. ÏÈ¶ÁÈ¡µ±Ç°ÅäÖÃµÄÖ÷ÎÄ¼ş£º`path` / `path_en`
-2. Èç¹ûµ±Ç°ÎÄ¼şÖĞÃ»ÓĞÆ¥ÅäÄÚÈİ£¬²å¼ş»á¸ù¾İ `type` ×Ô¶¯²¹³ä¶ÁÈ¡¶ÔÓ¦µÄ¹²ÏíÓïÑÔÎÄ¼ş
-
-×Ô¶¯²¹³ä¶ÁÈ¡µÄÄ¿±êÂ·¾¶¸ñÊ½ÈçÏÂ£º
-
-```text
-/src/resources/assets/languages/<type>/zh.json
-/src/resources/assets/languages/<type>/en.json
-```
-
-ÀıÈç£º
-
-- `type = dialog` Ê±£¬»á×Ô¶¯¶ÁÈ¡ `dialog` ¶ÔÓ¦µÄ¹²ÏíÓïÑÔÎÄ¼ş
-- `type = page` Ê±£¬»á×Ô¶¯¶ÁÈ¡ `page` ¶ÔÓ¦µÄ¹²ÏíÓïÑÔÎÄ¼ş
-
-ÕâÀï²»ĞèÒªÔÚÅäÖÃÀïÖØ¸´ÉùÃ÷¶îÍâÂ·¾¶£¬Ò²²»ĞèÒªÊÖ¶¯Î¬»¤Í¬ÑùµÄÖ»¶ÁÅäÖÃ¡£
-
-## Ğ´Èë¹æÔò
-
-ĞÂÔö key Ê±Ä¬ÈÏĞ´Èëµ±Ç°ÅäÖÃµÄÖ÷ÎÄ¼ş£º
-
-- ÖĞÎÄĞ´Èë `path`
-- Ó¢ÎÄĞ´Èë `path_en`
-
-×Ô¶¯²¹³ä¶ÁÈ¡µÄ¹²ÏíÎÄ¼şÖ»²ÎÓë¶ÁÈ¡£¬²»²ÎÓëĞ´Èë¡£
-
-## ÍêÕûÊ¾Àı
+é…ç½®ç¤ºä¾‹ï¼š
 
 ```json
 {
-  "i18nhelper": [
-    {
-      "type": "page",
-      "path": "/src/resources/assets/languages/page/zh.json",
-      "path_en": "/src/resources/assets/languages/page/en.json"
-    },
-    {
-      "type": "dialog",
-      "path": "/src/resources/assets/languages/dialog/zh.json",
-      "path_en": "/src/resources/assets/languages/dialog/en.json"
-    }
-  ],
-  "format": "$t(#('?')#(,?))",
-  "forecast": 8,
-  "translate": {
-    "source": "zh",
-    "target": [
-      "en"
-    ],
-    "appid": "",
-    "secret": ""
-  }
-}
-```
-
-## ²¹³äËµÃ÷
-
-Èç¹ûºóĞøÄ³Ğ©ÌØÊâ·ÖÀàĞèÒª¸ü¸´ÔÓµÄ¹æÔò£¬ÀıÈç£º
-
-- Ò»¸öÀàĞÍ¶ÁÈ¡¶à¸ö¶îÍâÀ´Ô´
-- ÌØÊâÄ£¿éĞèÒª¸²¸ÇÄ¬ÈÏ¶ÁÈ¡ĞĞÎª
-- °´ÍêÕû key ¾ö¶¨Ğ´ÈëÄ¿±ê
-
-¿ÉÒÔÍ¨¹ı×¨ÃÅ×Ö¶ÎÀ©Õ¹£¬ÀıÈç `children`¡£
-
-## ¿çÄ£¿éĞ´Èë
-
-Èç¹ûÄ³¸öÀàĞÍ²»ÊÇ¼òµ¥µØ¹Ì¶¨Ğ´Èë `path` / `path_en`£¬¶øÊÇĞèÒª¸ù¾İÍêÕû key Ğ´µ½²»Í¬Ä£¿é£¬¿ÉÒÔÔÚ¸ÃÀàĞÍÏÂÅäÖÃ `children`¡£
-
-ÀıÈç£º
-
-```json
-{
-  "type": "router",
-  "path": "/src/resources/assets/languages/router/zh.json",
-  "path_en": "/src/resources/assets/languages/router/en.json",
+  "type": "term",
+  "path": "/src/resources/assets/languages/term/zh.json",
+  "path_en": "/src/resources/assets/languages/term/en.json",
   "children": [
     {
-      "type": "router.codehub.",
-      "path": "/src/commercial-module/codehub/languages/router/zh.json",
-      "path_en": "/src/commercial-module/codehub/languages/router/en.json"
+      "type": "term.inspect.",
+      "path": "/src/commercial-module/inspect/languages/term/zh.json",
+      "path_en": "/src/commercial-module/inspect/languages/term/en.json"
     }
   ]
 }
 ```
 
-### children µÄ×÷ÓÃ
+ä¸Šé¢é…ç½®è¡¨ç¤ºï¼šåªæœ‰å½“å‰æ–‡ä»¶ä½äº `/src/commercial-module/inspect/` æ—¶ï¼Œ`term.inspect.xxx` æ‰ä¼šè¯»å†™å•†ä¸š inspect çš„ term æ–‡ä»¶ã€‚å…¶ä»–å•†ä¸šæ¨¡å—ä¸èƒ½å‘½ä¸­è¿™æ¡ childrenã€‚
 
-- `children` Ö»¿ØÖÆĞ´ÈëÎ»ÖÃ
-- Æ¥ÅäÊ±Ê¹ÓÃÍêÕû key£¬ÀıÈç `router.dr.list`
-- ÃüÖĞ¹æÔòºó£¬Ğ´Èë¶ÔÓ¦¹æÔòÀïµÄ `path` / `path_en`
-- Èç¹ûÃ»ÓĞÃüÖĞÈÎºÎ¹æÔò£¬²Å»Øµ½¸ÃÀàĞÍ×Ô¼ºµÄ `path` / `path_en`
+`router` çš„é…ç½®æ–¹å¼ç›¸åŒï¼Œåªæ˜¯ç±»å‹å’Œ key å‰ç¼€æ¢æˆ `router.<module>.`ã€‚
 
-### Æ¥Åä¹æÔò
+## 3. å•†ä¸šæ¨¡å—ä¸åŸºç¡€æ¨¡å—åŒå
 
-²å¼ş»á°´ÏÂÃæ¹æÔòÆ¥Åä£º
+å½“ `/src/commercial-module/<module>/` å’Œ `/src/views/pages/<module>/` åŒæ—¶å­˜åœ¨æ—¶ï¼Œæ¨¡å—åç§°ç›¸åŒä¸ä»£è¡¨è¯»å†™åŒä¸€ä¸ªè¯­è¨€æ–‡ä»¶ï¼Œå¿…é¡»æŒ‰å½“å‰æ–‡ä»¶è·¯å¾„åŒºåˆ†ã€‚
 
-1. ÏÈ°´ `type` Æ¥ÅäÍêÕû key
-2. ¶àÌõ¹æÔòÍ¬Ê±ÃüÖĞÊ±£¬ÓÅÏÈÊ¹ÓÃ¸ü¾ßÌåµÄ¹æÔò
+- å½“å‰æ–‡ä»¶åœ¨ `/src/commercial-module/<module>/` ä¸‹ï¼š`router.<module>.xxx`ã€`term.<module>.xxx` ä¼˜å…ˆè¯»å†™å•†ä¸šæ¨¡å—è‡ªå·±çš„ children è¯­è¨€æ–‡ä»¶
+- å½“å‰æ–‡ä»¶åœ¨ `/src/views/pages/<module>/` ä¸‹ï¼šæŒ‰åŸºç¡€æ¨¡å—è§„åˆ™è¯»å†™å…¬å…± `router` / `term`
+- å½“å‰æ–‡ä»¶åœ¨å…¶ä»–å•†ä¸šæ¨¡å—ä¸‹ï¼šä¸èƒ½å‘½ä¸­è¿™ä¸ª `<module>` çš„ childrenï¼Œä¹Ÿä¸èƒ½åæŸ¥è¿™ä¸ª `<module>` çš„å•†ä¸šè¯­è¨€æ–‡ä»¶
+- å•†ä¸šæ¨¡å—è¯»å–å…¬å…± `router` / `term` æ—¶ï¼Œåªå…è®¸è¯»å–ä¸å½“å‰æ¨¡å—åŒåçš„å‘½åç©ºé—´ä½œä¸ºæ—§ key å…œåº•
+- æ–°å¢ key æ—¶ï¼Œå•†ä¸šæ¨¡å—åªèƒ½å†™å½“å‰æ¨¡å—å‘½åç©ºé—´ï¼Œä¸èƒ½å†™å…¶ä»–æ¨¡å—å‘½åç©ºé—´
 
-ÀıÈç£º
+ä¾‹å¦‚å½“å‰æ–‡ä»¶åœ¨ `/src/commercial-module/inspect/` ä¸‹ï¼š
 
-- `router.cmdbtransfer.sync.name` »áÓÅÏÈÃüÖĞ `router.cmdbtransfer.`
-- `router.dr.overview` »áÃüÖĞ `router.dr.`
-- `router.cmdb.home` »áÃüÖĞ `router.cmdb.`
+- å¯ä»¥æ–°å¢ `term.inspect.xxx`ï¼Œå†™å…¥ `/src/commercial-module/inspect/languages/term/zh.json`
+- ä¸å¯ä»¥æ–°å¢ `term.cmdb.xxx`ï¼Œå› ä¸º `cmdb` æ˜¯å…¶ä»–æ¨¡å—å‘½åç©ºé—´
+- åªå…è®¸å…œåº•è¯»å–å…¬å…± `term.inspect.*`ï¼Œä¸èƒ½å…œåº•è¯»å–å…¬å…± `term.cmdb.*`
 
-### ÊÊÓÃ³¡¾°
-
-ÕâÀà¹æÔòÊÊºÏÏÂÃæÕâĞ©³¡¾°£º
-
-- `router` ĞèÒª°´Ä£¿é·Ö±ğĞ´Èë²»Í¬Ä¿Â¼
-- `form`¡¢`term` ÕâÀà·ÖÀàÒ²´æÔÚ¿çÄ£¿éĞ´ÈëĞèÇó
-- Ä³Ğ© key ÃüÃû¿Õ¼äÏàÍ¬£¬µ«×îÖÕÂäÅÌÎ»ÖÃ²»Í¬
-
-Ò²¾ÍÊÇËµ£º
-
-- ÆÕÍ¨·ÖÀàÖ»ĞèÒª `type + path + path_en`
-- ÌØÊâ·ÖÀàÈç¹û´æÔÚ¿çÄ£¿éĞ´Èë£¬ÔÙ¶îÍâ¼Ó `children`
-
-µ«¶ÔÆÕÍ¨·ÖÀàÀ´Ëµ£¬Ö»±£Áô `type + path + path_en` ¾Í×ã¹»ÁË¡£
-
-## Alt + T ¶ÁÈ¡ÏŞÖÆ
-
-µ±Ä³¸öÀàĞÍÅäÖÃÁË `children` ºó£¬`Alt + T` µÄÖĞÎÄ·´²é key ²»ÄÜ¿çÄ£¿éÆ¥Åä¡£
-
-Ò²¾ÍÊÇËµ£º
-
-- Ä³Ìõ `children` Ö¸ÏòÄÄ¸öÄ£¿é£¬ÕâÌõ¹æÔò¶ÔÓ¦µÄÓïÑÔÎÄ¼ş¾ÍÖ»ÔÚ¸ÃÄ£¿éÄÚ²ÎÓë·´²é
-- ²»ÔÚ¶ÔÓ¦Ä£¿éÖĞÊ±£¬¼´Ê¹¸ÃÓïÑÔÎÄ¼şÀï´æÔÚÏàÍ¬ÖĞÎÄ£¬Ò²²»Ó¦¸Ã±» `Alt + T` ÃüÖĞ
-- ÕâÑù¿ÉÒÔ±ÜÃâ°ÑÆäËûÄ£¿éµÄ key ÎóÆ¥Åäµ½µ±Ç°ÎÄ¼ş
-
-ÀıÈç£º
-
-```json
-{
-  "type": "router",
-  "path": "/src/resources/assets/languages/router/zh.json",
-  "path_en": "/src/resources/assets/languages/router/en.json",
-  "children": [
-    {
-      "type": "router.codehub.",
-      "path": "/src/commercial-module/codehub/languages/router/zh.json",
-      "path_en": "/src/commercial-module/codehub/languages/router/en.json"
-    }
-  ]
-}
-```
-
-ÉÏÃæÕâÀàÅäÖÃÔÚ `Alt + T` Ê±Ó¦×ñÑ­ÏÂÃæ¹æÔò£º
-
-- µ±Ç°ÎÄ¼şÔÚ `/src/commercial-module/dr/` ÏÂÊ±£¬Ö»ÔÊĞí·´²é `dr` ×Ô¼ºµÄ router ÓïÑÔÎÄ¼şºÍ¹«¹² router ÎÄ¼ş
-- µ±Ç°ÎÄ¼şÔÚ `/src/commercial-module/cmdbtransfer/` ÏÂÊ±£¬Ö»ÔÊĞí·´²é `cmdbtransfer` ×Ô¼ºµÄ router ÓïÑÔÎÄ¼şºÍ¹«¹² router ÎÄ¼ş
-- µ±Ç°ÎÄ¼ş²»ÔÚ¶ÔÓ¦Ä£¿éÏÂÊ±£¬²»ÔÊĞíÈ¥·´²éÕâĞ©ÉÌÒµÄ£¿é×Ô¼ºµÄ router ÓïÑÔÎÄ¼ş
-
-ÕâÒ»Ìõ¹æÔòÖ»Ó°Ïì `Alt + T` µÄ¶ÁÈ¡ºÍ·´²é·¶Î§£¬²»Ó°ÏìĞÂÔö key Ê±°´ `children` µÄĞ´ÈëÂß¼­¡£
+è¿™ä¸€è§„åˆ™åŒæ ·é€‚ç”¨äº `Alt + T` åæŸ¥ï¼šåæŸ¥èŒƒå›´å¿…é¡»è·Ÿå½“å‰æ–‡ä»¶æ‰€å±æ¨¡å—ä¸€è‡´ï¼Œé¿å…æŠŠå…¶ä»–æ¨¡å—çš„ key åŒ¹é…åˆ°å½“å‰æ–‡ä»¶ã€‚
