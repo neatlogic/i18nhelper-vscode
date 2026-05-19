@@ -215,7 +215,7 @@ const editorDecorations = new Map();
 async function applyDecorations(editor) {
   const pathList = utils.getI18nPaths();
   if (pathList && pathList.length > 0) {
-    const data = utils.loadI18nData();
+    const data = utils.loadScopedI18nData(editor.document.uri.fsPath);
     let decorationType = null;
     if (editorDecorations.get(editor)) {
       decorationType = editorDecorations.get(editor);

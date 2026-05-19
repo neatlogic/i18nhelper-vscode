@@ -165,12 +165,23 @@ function isModulePath(filePath) {
   );
 }
 
-function isPathAllowedForScope(filePath, scope) {
+function isRestrictedCommonTypePath(filePath, type) {
+  if (type !== 'router' && type !== 'term') {
+    return false;
+  }
+  const normalizedPath = normalizeForMatch(filePath);
+  return normalizedPath.includes(`/src/resources/assets/languages/${type}/`);
+}
+
+function isPathAllowedForReadScope(filePath, scope) {
   const normalizedPath = normalizeForMatch(filePath);
   if (scope.scopeType === 'base') {
     return !isModulePath(normalizedPath);
   }
   if (scope.scopeType === 'commercial-module') {
+    if (normalizedPath.includes('/src/community-module/')) {
+      return false;
+    }
     return (
       !normalizedPath.includes('/src/commercial-module/') ||
       normalizedPath.includes(
@@ -179,6 +190,9 @@ function isPathAllowedForScope(filePath, scope) {
     );
   }
   if (scope.scopeType === 'community-module') {
+    if (normalizedPath.includes('/src/commercial-module/')) {
+      return false;
+    }
     return (
       !normalizedPath.includes('/src/community-module/') ||
       normalizedPath.includes(
@@ -189,13 +203,24 @@ function isPathAllowedForScope(filePath, scope) {
   return true;
 }
 
+function isPathAllowedForWriteScope(filePath, scope, type) {
+  const normalizedPath = normalizeForMatch(filePath);
+  if (scope.scopeType === 'base') {
+    return !isModulePath(normalizedPath);
+  }
+  if (isRestrictedCommonTypePath(normalizedPath, type)) {
+    return false;
+  }
+  return isPathAllowedForReadScope(filePath, scope);
+}
+
 function getScopedTypeReadPaths(type, editorFilePath, language) {
   const scope = getEditorScope(editorFilePath);
   const scopedPaths = getTypeReadPaths(type, language).filter((filePath) =>
-    isPathAllowedForScope(filePath, scope)
+    isPathAllowedForReadScope(filePath, scope)
   );
   const additionalRulePaths = getAdditionalRuleReadPaths(type, editorFilePath, language);
-  return uniquePaths([...scopedPaths, ...additionalRulePaths]);
+  return uniquePaths([...additionalRulePaths, ...scopedPaths]);
 }
 
 function getI18nPaths(language) {
@@ -228,6 +253,32 @@ function readJsonFile(filePath) {
   } catch (e) {
     return {};
   }
+}
+
+function readJsonFileForType(filePath) {
+  return readJsonFile(filePath);
+}
+
+function readJsonFileForScope(filePath, scope, type) {
+  const data = readJsonFile(filePath);
+  if (
+    !scope ||
+    scope.scopeType === 'base' ||
+    !isRestrictedCommonTypePath(filePath, type) ||
+    !scope.scopeName
+  ) {
+    return data;
+  }
+  if (
+    data[scope.scopeName] &&
+    typeof data[scope.scopeName] === 'object' &&
+    !Array.isArray(data[scope.scopeName])
+  ) {
+    return {
+      [scope.scopeName]: data[scope.scopeName],
+    };
+  }
+  return {};
 }
 
 function mergeDeep(target, source) {
@@ -264,7 +315,7 @@ function loadI18nData(language) {
       ...getAdditionalRuleReadPaths(type, '', language),
     ]);
     readPaths.forEach((filePath) => {
-      mergeDeep(mergedData, readJsonFile(filePath));
+      mergeDeep(mergedData, readJsonFileForType(filePath));
     });
     data[type] = mergedData;
   });
@@ -273,12 +324,13 @@ function loadI18nData(language) {
 
 function loadScopedI18nData(editorFilePath, language) {
   const data = {};
+  const scope = getEditorScope(editorFilePath);
   const types = uniquePaths(getConfigItems().map((item) => item.type));
   types.forEach((type) => {
     const mergedData = {};
     const readPaths = getScopedTypeReadPaths(type, editorFilePath, language);
     readPaths.forEach((filePath) => {
-      mergeDeep(mergedData, readJsonFile(filePath));
+      mergeDeep(mergedData, readJsonFileForScope(filePath, scope, type));
     });
     data[type] = mergedData;
   });
@@ -312,28 +364,73 @@ function getRulePriority(rule) {
   return rule && rule.type ? rule.type.length : 0;
 }
 
+function isEditorPathInRuleScope(editorFilePath, rule) {
+  if (!rule || !rule.scope) {
+    return true;
+  }
+  const resolvedScope = resolveConfigPath(rule.scope);
+  if (!resolvedScope) {
+    return false;
+  }
+  return normalizeForMatch(editorFilePath).includes(normalizeForMatch(resolvedScope));
+}
+
+function isRuleAllowedForRead(rule, editorFilePath, language) {
+  if (!editorFilePath) {
+    return true;
+  }
+  if (!isEditorPathInRuleScope(editorFilePath, rule)) {
+    return false;
+  }
+  if (rule.scope) {
+    return true;
+  }
+  const scope = getEditorScope(editorFilePath);
+  const rulePath = resolveConfigPath(getLanguageValue(rule, 'path', language));
+  return rulePath ? isPathAllowedForReadScope(rulePath, scope) : true;
+}
+
+function isRuleAllowedForWrite(rule, type, editorFilePath, language) {
+  if (!editorFilePath) {
+    return true;
+  }
+  if (!isEditorPathInRuleScope(editorFilePath, rule)) {
+    return false;
+  }
+  if (rule.scope) {
+    return true;
+  }
+  const scope = getEditorScope(editorFilePath);
+  const rulePath = resolveConfigPath(getLanguageValue(rule, 'path', language));
+  return rulePath ? isPathAllowedForWriteScope(rulePath, scope, type) : true;
+}
+
 function getAdditionalRuleReadPaths(type, editorFilePath, language) {
   const config = getTypeConfig(type);
   if (!config || !Array.isArray(config.children)) {
     return [];
   }
-  const scope = editorFilePath ? getEditorScope(editorFilePath) : null;
   return uniquePaths(
     config.children
+      .filter((rule) => isRuleAllowedForRead(rule, editorFilePath, language))
       .map((rule) => resolveConfigPath(getLanguageValue(rule, 'path', language)))
       .filter((filePath) => filePath && isFileExists(filePath))
-      .filter((filePath) => !scope || isPathAllowedForScope(filePath, scope))
   );
 }
 
-function resolveWriteRule(type, fullKey) {
+function resolveWriteRule(type, fullKey, editorFilePath, language) {
   const config = getTypeConfig(type);
   if (!config || !Array.isArray(config.children)) {
     return null;
   }
   const matchedRules = config.children
     .filter((rule) => {
-      return rule && rule.type && fullKey.startsWith(rule.type);
+      return (
+        rule &&
+        rule.type &&
+        fullKey.startsWith(rule.type) &&
+        isRuleAllowedForWrite(rule, type, editorFilePath, language)
+      );
     })
     .sort((a, b) => getRulePriority(b) - getRulePriority(a));
   if (matchedRules.length > 0) {
@@ -342,8 +439,8 @@ function resolveWriteRule(type, fullKey) {
   return null;
 }
 
-function resolveWritePath(type, fullKey, language) {
-  const rule = resolveWriteRule(type, fullKey);
+function resolveWritePath(type, fullKey, language, editorFilePath) {
+  const rule = resolveWriteRule(type, fullKey, editorFilePath, language);
   if (rule) {
     const resolvedPath = resolveConfigPath(getLanguageValue(rule, 'path', language));
     if (resolvedPath) {
@@ -366,7 +463,7 @@ function updateI18nConfig(type, key, value, language, editorFilePath) {
   if (keys.length <= 1) {
     return;
   }
-  const i18nPath = resolveWritePath(type, key, language);
+  const i18nPath = resolveWritePath(type, key, language, editorFilePath);
   if (!i18nPath) {
     vscode.window.showErrorMessage(
       'new key must start with ' + getWritableTypes()
