@@ -259,28 +259,6 @@ function readJsonFileForType(filePath) {
   return readJsonFile(filePath);
 }
 
-function readJsonFileForScope(filePath, scope, type) {
-  const data = readJsonFile(filePath);
-  if (
-    !scope ||
-    scope.scopeType === 'base' ||
-    !isRestrictedCommonTypePath(filePath, type) ||
-    !scope.scopeName
-  ) {
-    return data;
-  }
-  if (
-    data[scope.scopeName] &&
-    typeof data[scope.scopeName] === 'object' &&
-    !Array.isArray(data[scope.scopeName])
-  ) {
-    return {
-      [scope.scopeName]: data[scope.scopeName],
-    };
-  }
-  return {};
-}
-
 function mergeDeep(target, source) {
   if (!source || typeof source !== 'object' || Array.isArray(source)) {
     return target;
@@ -324,13 +302,12 @@ function loadI18nData(language) {
 
 function loadScopedI18nData(editorFilePath, language) {
   const data = {};
-  const scope = getEditorScope(editorFilePath);
   const types = uniquePaths(getConfigItems().map((item) => item.type));
   types.forEach((type) => {
     const mergedData = {};
     const readPaths = getScopedTypeReadPaths(type, editorFilePath, language);
     readPaths.forEach((filePath) => {
-      mergeDeep(mergedData, readJsonFileForScope(filePath, scope, type));
+      mergeDeep(mergedData, readJsonFileForType(filePath));
     });
     data[type] = mergedData;
   });
@@ -451,7 +428,17 @@ function resolveWritePath(type, fullKey, language, editorFilePath) {
   if (!config) {
     return '';
   }
-  return resolveConfigPath(getLanguageValue(config, 'path', language));
+  const defaultPath = resolveConfigPath(
+    getLanguageValue(config, 'path', language)
+  );
+  if (
+    editorFilePath &&
+    defaultPath &&
+    !isPathAllowedForWriteScope(defaultPath, getEditorScope(editorFilePath), type)
+  ) {
+    return '';
+  }
+  return defaultPath;
 }
 
 function getWritableTypes() {
@@ -461,14 +448,14 @@ function getWritableTypes() {
 function updateI18nConfig(type, key, value, language, editorFilePath) {
   const keys = key.split('.');
   if (keys.length <= 1) {
-    return;
+    return false;
   }
   const i18nPath = resolveWritePath(type, key, language, editorFilePath);
   if (!i18nPath) {
     vscode.window.showErrorMessage(
       'new key must start with ' + getWritableTypes()
     );
-    return;
+    return false;
   }
 
   const fileDir = path.dirname(i18nPath);
@@ -505,6 +492,7 @@ function updateI18nConfig(type, key, value, language, editorFilePath) {
   vscode.window.showInformationMessage(
     'key:' + key + ' is appended to ' + type
   );
+  return true;
 }
 
 async function findValueByKey(filePath, key) {
