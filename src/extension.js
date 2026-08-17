@@ -75,9 +75,17 @@ function activate(context) {
                       const newKey = input;
                       const type = input.split('.')[0];
                       const newText = selectedText.replace(/[\'\"]/gi, '');
-                      utils.updateI18nConfig(type, newKey, newText, null, editorFilePath);
-                      translate.translate(type, newKey, newText, editorFilePath);
-                      foundedkey = input;
+                      const isUpdated = utils.updateI18nConfig(
+                        type,
+                        newKey,
+                        newText,
+                        null,
+                        editorFilePath
+                      );
+                      if (isUpdated) {
+                        translate.translate(type, newKey, newText, editorFilePath);
+                        foundedkey = input;
+                      }
                     } catch (e) {
                       vscode.window.showErrorMessage(e);
                     }
